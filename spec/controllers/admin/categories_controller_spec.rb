@@ -33,6 +33,31 @@ describe Admin::CategoriesController do
       assigns(:categories).should_not be_nil
     end
   end
+  
+  describe "test_new_or_edit" do
+    before(:each) do
+      post :edit, :category => {:name => 'test_category_name', :keywords => 'test_category_keywords', :description => 'test_category_description', :permalink => nil}
+    end
+    
+    it 'should allow creating new categories' do
+      category = Factory(:category)
+      Category.should_receive(:new).and_return(category)
+      post :edit, :category => {:name => 'test_category_name_2', :keywords => 'test_category_keywords_2', :description => 'test_category_description_2', :permalink => nil}
+      assert_response :redirect, :action => 'index'
+      expect(assigns(:category)).to_not be_nil
+      expect(flash[:notice]).to eq("Category was successfully saved.")
+    end
+    
+    it 'should allow editing existing categories' do
+      category = Factory(:category)
+      Category.should_receive(:find).with(:all)
+      Category.should_receive(:find).with(category.id).and_return(category)
+      post :edit, :id=>category.id, :category => {:name => 'test_category_name', :keywords => 'test_category_keywords', :description => 'test_category_description', :permalink => nil}
+      assert_response :redirect, :action => 'index'
+      expect(assigns(:category)).to_not be_nil
+      expect(flash[:notice]).to eq("Category was successfully saved.")
+    end
+  end
 
   it "test_update" do
     post :edit, :id => Factory(:category).id
